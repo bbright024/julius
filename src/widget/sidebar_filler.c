@@ -44,6 +44,9 @@ typedef struct {
 static struct {
     int height;
     int game_speed;
+    int game_speed_enabled;
+    int unemployment_enabled;
+    int objectives_enabled;
     int unemployment_percentage;
     int unemployment_amount;
     objective culture;
@@ -75,20 +78,26 @@ static int calculate_extra_info_height(int available_height, int is_collapsed)
 {
     if (is_collapsed || !config_get(CONFIG_UI_SIDEBAR_INFO)) {
         data.height = 0;
+        data.objectives_enabled = 0;
+        data.unemployment_enabled = 0;
+        data.game_speed_enabled = 0;        
     } else {
         int final_height = 0;
         if (available_height >= EXTRA_INFO_HEIGHT_RATINGS_TOTAL) {
           final_height += EXTRA_INFO_HEIGHT_RATINGS_TOTAL;
           available_height -= EXTRA_INFO_HEIGHT_RATINGS_TOTAL;
-        }
+          data.objectives_enabled = 1;
+        } 
         if (available_height >= EXTRA_INFO_HEIGHT_UNEMPLOYMENT_TOTAL) {
             final_height += EXTRA_INFO_HEIGHT_UNEMPLOYMENT_TOTAL;
             available_height -= EXTRA_INFO_HEIGHT_UNEMPLOYMENT_TOTAL;
-        }
+            data.unemployment_enabled = 1;            
+        } 
         if (available_height >= EXTRA_INFO_HEIGHT_GAME_SPEED_TOTAL) {
             final_height += EXTRA_INFO_HEIGHT_GAME_SPEED_TOTAL;
             available_height -= EXTRA_INFO_HEIGHT_GAME_SPEED_TOTAL;
-        }
+            data.game_speed_enabled = 1;            
+        } 
         data.height = final_height;
     }
     return data.height;
@@ -134,18 +143,19 @@ static int update_extra_info_value(int value, int *field)
 
 static int update_extra_info(int height, int is_background)
 {
+    calculate_extra_info_height(height, 0);
     int changed = 0;
-    if (height >= EXTRA_INFO_HEIGHT_GAME_SPEED) {
+    if (data.game_speed_enabled) {
         changed |= update_extra_info_value(setting_game_speed(), &data.game_speed);
     }
-    if (height >= EXTRA_INFO_HEIGHT_UNEMPLOYMENT) {
+    if (data.unemployment_enabled) {
         changed |= update_extra_info_value(city_labor_unemployment_percentage(), &data.unemployment_percentage);
         changed |= update_extra_info_value(
                        city_labor_workers_unemployed() - city_labor_workers_needed(),
                        &data.unemployment_amount
                    );
     }
-    if (height >= EXTRA_INFO_HEIGHT_RATINGS) {
+    if (data.objectives_enabled) {
         if (is_background) {
             set_extra_info_objectives();
         }
@@ -200,7 +210,7 @@ static void draw_extra_info_panel(int x_offset, int y_offset, int width, int hei
     y_current_line += EXTRA_INFO_LINE_SPACE;
 
     // Unemployment info in extra_info panel
-    if (height >= EXTRA_INFO_HEIGHT_UNEMPLOYMENT) {
+    if (data.unemployment_enabled) {
         lang_text_draw(68, 148, x_offset + 11, y_current_line, FONT_NORMAL_WHITE);
         y_current_line += EXTRA_INFO_UNEMPLOYMENT_TOP_PADDING;
 
@@ -210,7 +220,7 @@ static void draw_extra_info_panel(int x_offset, int y_offset, int width, int hei
     }
 
     // Objective value info on extra_info panel (culture, prosperity, peace, etc)
-    if (height >= EXTRA_INFO_HEIGHT_RATINGS) {
+    if (data.objectives_enabled) {
         draw_extra_info_objective(x_offset, y_current_line, 53, 1, &data.culture, 0);
         y_current_line += EXTRA_INFO_LINE_SPACE;
 
@@ -263,8 +273,8 @@ void sidebar_filler_draw_background(int x_offset, int y_offset, int width, int a
     }
 }
 
-void sidebar_filler_draw_foreground(int x_offset, int y_offset, int width, int available_height, int is_collapsed)
+void sidebar_filler_draw_foreground(int x_offset, int y_offset, int width, int is_collapsed)
 {
-    draw_extra_info_buttons(x_offset, y_offset, width, available_height, is_collapsed);
+    draw_extra_info_buttons(x_offset, y_offset, width, is_collapsed);
 }
 
