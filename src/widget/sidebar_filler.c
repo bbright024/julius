@@ -18,8 +18,12 @@
 
 #define EXTRA_INFO_LINE_SPACE 32
 #define EXTRA_INFO_HEIGHT_GAME_SPEED 64
+#define EXTRA_INFO_HEIGHT_GAME_SPEED_TOTAL 64
 #define EXTRA_INFO_HEIGHT_UNEMPLOYMENT 112
+#define EXTRA_INFO_HEIGHT_UNEMPLOYMENT_TOTAL 48
 #define EXTRA_INFO_HEIGHT_RATINGS 272
+#define EXTRA_INFO_HEIGHT_RATINGS_TOTAL 160
+
 #define EXTRA_INFO_TOP_PADDING 10
 #define EXTRA_INFO_SPEED_PADDING 26
 #define EXTRA_INFO_UNEMPLOYMENT_TOP_PADDING 20
@@ -72,15 +76,20 @@ static int calculate_extra_info_height(int available_height, int is_collapsed)
     if (is_collapsed || !config_get(CONFIG_UI_SIDEBAR_INFO)) {
         data.height = 0;
     } else {
-        if (available_height >= EXTRA_INFO_HEIGHT_RATINGS) {
-            data.height = EXTRA_INFO_HEIGHT_RATINGS;
-        } else if (available_height >= EXTRA_INFO_HEIGHT_UNEMPLOYMENT) {
-            data.height = EXTRA_INFO_HEIGHT_UNEMPLOYMENT;
-        } else if (available_height >= EXTRA_INFO_HEIGHT_GAME_SPEED) {
-            data.height = EXTRA_INFO_HEIGHT_GAME_SPEED;
-        } else {
-            data.height = 0;
+        int final_height = 0;
+        if (available_height >= EXTRA_INFO_HEIGHT_RATINGS_TOTAL) {
+          final_height += EXTRA_INFO_HEIGHT_RATINGS_TOTAL;
+          available_height -= EXTRA_INFO_HEIGHT_RATINGS_TOTAL;
         }
+        if (available_height >= EXTRA_INFO_HEIGHT_UNEMPLOYMENT_TOTAL) {
+            final_height += EXTRA_INFO_HEIGHT_UNEMPLOYMENT_TOTAL;
+            available_height -= EXTRA_INFO_HEIGHT_UNEMPLOYMENT_TOTAL;
+        }
+        if (available_height >= EXTRA_INFO_HEIGHT_GAME_SPEED_TOTAL) {
+            final_height += EXTRA_INFO_HEIGHT_GAME_SPEED_TOTAL;
+            available_height -= EXTRA_INFO_HEIGHT_GAME_SPEED_TOTAL;
+        }
+        data.height = final_height;
     }
     return data.height;
 }
@@ -254,8 +263,8 @@ void sidebar_filler_draw_background(int x_offset, int y_offset, int width, int a
     }
 }
 
-void sidebar_filler_draw_foreground(int x_offset, int y_offset, int width, int is_collapsed)
+void sidebar_filler_draw_foreground(int x_offset, int y_offset, int width, int available_height, int is_collapsed)
 {
-    draw_extra_info_buttons(x_offset, y_offset, width, is_collapsed);
+    draw_extra_info_buttons(x_offset, y_offset, width, available_height, is_collapsed);
 }
 
