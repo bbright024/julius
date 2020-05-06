@@ -76,18 +76,14 @@ int sidebar_filler_handle_mouse(const mouse *m, int x_offset, int y_offset)
 
 static int calculate_extra_info_height(int available_height, int is_collapsed)
 {
+    data.objectives_enabled = 0;
+    data.unemployment_enabled = 0;
+    data.game_speed_enabled = 0;        
+
     if (is_collapsed || !config_get(CONFIG_UI_SIDEBAR_INFO)) {
         data.height = 0;
-        data.objectives_enabled = 0;
-        data.unemployment_enabled = 0;
-        data.game_speed_enabled = 0;        
     } else {
         int final_height = 0;
-        if (available_height >= EXTRA_INFO_HEIGHT_RATINGS_TOTAL) {
-          final_height += EXTRA_INFO_HEIGHT_RATINGS_TOTAL;
-          available_height -= EXTRA_INFO_HEIGHT_RATINGS_TOTAL;
-          data.objectives_enabled = 1;
-        } 
         if (available_height >= EXTRA_INFO_HEIGHT_UNEMPLOYMENT_TOTAL) {
             final_height += EXTRA_INFO_HEIGHT_UNEMPLOYMENT_TOTAL;
             available_height -= EXTRA_INFO_HEIGHT_UNEMPLOYMENT_TOTAL;
@@ -97,7 +93,13 @@ static int calculate_extra_info_height(int available_height, int is_collapsed)
             final_height += EXTRA_INFO_HEIGHT_GAME_SPEED_TOTAL;
             available_height -= EXTRA_INFO_HEIGHT_GAME_SPEED_TOTAL;
             data.game_speed_enabled = 1;            
+        }
+        if (available_height >= EXTRA_INFO_HEIGHT_RATINGS_TOTAL) {
+            final_height += EXTRA_INFO_HEIGHT_RATINGS_TOTAL;
+            available_height -= EXTRA_INFO_HEIGHT_RATINGS_TOTAL;
+            data.objectives_enabled = 1;
         } 
+
         data.height = final_height;
     }
     return data.height;
